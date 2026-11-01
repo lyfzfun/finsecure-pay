@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Local AWS and Kubernetes configuration
+eks-cluster.yaml
+kubeconfig
+kubeconfig-*
+*.pem
+*.key
+
+# Local environment secrets
+.env
+.env.*
+!.env.example

@@ -1,0 +1,9 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: finsecure-pay-config
+  namespace: default
+data:
+  SERVER_PORT: "8080"
+  SPRING_APPLICATION_NAME: "finsecure-pay"

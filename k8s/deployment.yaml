@@ -1,0 +1,51 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finsecure-pay
+  namespace: default
+  labels:
+    app: finsecure-pay
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: finsecure-pay
+  template:
+    metadata:
+      labels:
+        app: finsecure-pay
+    spec:
+      containers:
+        - name: finsecure-pay
+          image: lyfzfun/finsecure-pay:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: finsecure-pay-config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 45
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
