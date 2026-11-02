@@ -1,9 +1,11 @@
+
 pipeline {
     agent any
 
     options {
         timestamps()
         disableConcurrentBuilds()
+        skipDefaultCheckout(true)
     }
 
     environment {
@@ -39,7 +41,13 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Security Checks') {
+            steps {
+                echo 'Security scanning will be configured in Task 5'
+            }
+        }
+
+        stage('Container Build') {
             steps {
                 echo 'Building the FinSecure Pay Docker image'
                 bat 'docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% .'
@@ -55,14 +63,7 @@ pipeline {
                         passwordVariable: 'DOCKERHUB_PASSWORD'
                     )
                 ]) {
-                    bat '''
-                        echo %DOCKERHUB_PASSWORD% | docker login --username %DOCKERHUB_USER% --password-stdin
-                        if errorlevel 1 exit /b 1
-                        docker push %DOCKER_IMAGE%:%BUILD_NUMBER%
-                        if errorlevel 1 exit /b 1
-                        
-                        docker logout
-                    '''
+                    bat 'powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\\docker-push.ps1'
                 }
             }
         }
@@ -72,7 +73,10 @@ pipeline {
                 bat '''
                     kubectl set image deployment/finsecure-pay ^
                         finsecure-pay=%DOCKER_IMAGE%:%BUILD_NUMBER%
+                    if errorlevel 1 exit /b 1
+
                     kubectl rollout status deployment/finsecure-pay --timeout=180s
+                    if errorlevel 1 exit /b 1
                 '''
             }
         }
@@ -82,9 +86,11 @@ pipeline {
         success {
             echo 'FinSecure Pay pipeline completed successfully!'
         }
+
         failure {
             echo 'Pipeline failed. Check the stage logs.'
         }
+
         always {
             echo 'Pipeline execution finished.'
         }
