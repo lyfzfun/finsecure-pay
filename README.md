@@ -1,0 +1,1 @@
+CI/CD automation: Jenkins monitors the main branch using Poll SCM.
