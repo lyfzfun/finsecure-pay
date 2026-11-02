@@ -57,7 +57,13 @@ pipeline {
                 '''
             }
         }
-
+        stage('Security Gate Negative Test') {
+            steps {
+                echo 'Testing security gate with a known vulnerable image'
+                bat 'trivy image --severity HIGH,CRITICAL --exit-code 1 alpine:3.10'
+            }
+        }
+        
         stage('Package') {
             steps {
                 echo 'Packaging the application'
